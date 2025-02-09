@@ -131,20 +131,24 @@ public:
     {
         std::string result = format;
         size_t pos;
+        // 替换 {time} 关键字
         while ((pos = result.find("{time}")) != std::string::npos)
         {
             result.replace(pos, 6, timestamp);
         }
+        // 替换 {label} 关键字
         while ((pos = result.find("{label}")) != std::string::npos)
         {
             result.replace(pos, 7, label);
         }
+        // 替换 {duration} 关键字
         while ((pos = result.find("{duration}")) != std::string::npos)
         {
             std::ostringstream ss;
             ss << std::fixed << std::setprecision(PRECISION) << (double)duration.count() / 1000000;
             result.replace(pos, 10, ss.str());
         }
+        // 替换 {commitID} 关键字
         while ((pos = result.find("{commitID}")) != std::string::npos)
         {
             result.replace(pos, 10, commitID);
