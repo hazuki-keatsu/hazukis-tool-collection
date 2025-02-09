@@ -8,8 +8,8 @@
  *      label: 标签，默认为"timer"
  *      mode: 输出模式，默认为"std"，可选"log"
  *      format: 输出格式，默认为"[{time}] ({label}) {duration} seconds."，还有{commitID}可选
- *      dst: 输出目标，默认为"none"，设置输出路径
- *      PRECISION: 精度，默认为6
+ *      dst: 输出目标，默认为"none"，即在工作目录下输出，设置输出路径
+ *      PRECISION: 保留小数位数，默认为6
  *
  *      参数可以缺省，但必须顺序填写，否则会出错
  *
@@ -167,8 +167,7 @@ public:
         }
         std::string key = replaceKeyWord(format, label, duration, PRECISION, timestamp, commitID);
         TerminalColor_::setGreen();
-        std::cout << "\n\n"
-                  << key << std::endl;
+        std::cout << "\n\n" << key << std::endl;
         TerminalColor_::reset();
     }
 
@@ -217,7 +216,7 @@ public:
 
         std::string key = replaceKeyWord(format, label, duration, PRECISION, timestamp, commitID);;
 
-        logFile << key << std::endl;
+        logFile << "\n" << key << std::endl;
         logFile.close();
     };
 };
