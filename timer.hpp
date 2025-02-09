@@ -17,13 +17,14 @@
 #include <iostream>
 #include <chrono>
 #include <iomanip>
+#include <fstream>
 
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
 // 跨平台终端颜色控制
-class TerminalColor
+class TerminalColor_
 {
 public:
 #ifdef _WIN32
@@ -36,10 +37,7 @@ public:
             return csbi.wAttributes;
         }
         else
-        {
-            std::cerr << "Error getting console screen buffer info." << std::endl;
             return -1;
-        }
     }
 
     static void setGreen()
@@ -69,17 +67,42 @@ public:
 
 // 定义静态成员变量
 #ifdef _WIN32
-int TerminalColor::textAttribute_ = TerminalColor::getInitialTextAttribute();
+int TerminalColor_::textAttribute_ = TerminalColor_::getInitialTextAttribute();
 #endif
+
+class Output_
+{
+public:
+    static void stdOutput(const std::string &label_, std::chrono::microseconds duration, const int &PRECISION)
+    {
+        std::cout << "Time taken by " << label_ << " is ";
+        TerminalColor_::setGreen();
+        std::cout << std::fixed << std::setprecision(PRECISION) << (double)duration.count() / 1000000;
+        TerminalColor_::reset();
+        std::cout << " seconds." << std::endl;
+    }
+
+    // static void logOutput(const std::string &label_, std::chrono::microseconds duration, const int &PRECISION)
+    // {
+    //     std::ofstream logFile("log.txt", std::ios::app);
+    //     if (logFile.is_open())
+    //     {
+    //         logFile << "Time taken by " << label_ << " is ";
+    //         TerminalColor_::setGreen();
+    //         logFile << std::fixed << std::setprecision(PRECISION) << (double)duration.count
+    //     }
+    // }
+};
 
 // 核心计时器
 class Timer
 {
 public:
     // 输出的小数位数
-    static constexpr int PRECISION = 6;
+    static const int PRECISION_ = 6;
 
-    Timer(const std::string &label = "Timer") : label_(label)
+    Timer(const std::string &label = "timer", const std::string &model = "std", const std::string &dst = "none")
+        : label_(label), model_(model), dst_(dst)
     {
         start_ = std::chrono::high_resolution_clock::now();
     }
@@ -87,19 +110,26 @@ public:
     ~Timer()
     {
         end_ = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_ - start_);
+        auto duration_ = std::chrono::duration_cast<std::chrono::microseconds>(end_ - start_);
 
-        std::cout << "\nTime taken by " << label_ << " is ";
-        TerminalColor::setGreen();
-        std::cout << std::fixed << std::setprecision(PRECISION) << (double)duration.count() / 1000000;
-        TerminalColor::reset();
-        std::cout << " seconds." << std::endl;
+        if (model_ == "std")
+        {
+            Output_::stdOutput(label_, duration_, PRECISION_);
+        }
+        else if (model_ == "log")
+        {
+            if (dst_ == "none")
+            {
+            }
+        }
     }
 
 private:
     std::chrono::high_resolution_clock::time_point start_;
     std::chrono::high_resolution_clock::time_point end_;
     std::string label_;
+    std::string model_;
+    std::string dst_;
 };
 
 #endif
