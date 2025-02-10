@@ -6,14 +6,14 @@
  *      自动计数器：
  *      AutoTimer timer(label, mode, format, dst, PRECISION);
  *          不需要手动开始和结束，自动记录时间，输出时间间隔
- * 
+ *
  *      手动计时器：
  *      ManualTimer timer(label, mode, format, dst, PRECISION);
  *      timer.start();
  *      timer.end();
  *          需要手动调用start()和end()函数开始记录，在程序结束的时候输出时间间隔
- *      
- *      
+ *
+ *
  *      参数：
  *      label: 标签，默认为"timer"
  *      mode: 输出模式，默认为"std"，可选"log"
@@ -97,10 +97,10 @@ class ManualTimer
 {
 public:
     ManualTimer(const std::string &label = "timer",
-        const std::string &mode = "std",
-        const std::string &format = "[{time}] ({label}) {duration} seconds.",
-        const std::string &dst = "none",
-        const int &PRECISION = 6)
+                const std::string &mode = "std",
+                const std::string &format = "[{time}] ({label}) {duration} seconds.",
+                const std::string &dst = "none",
+                const int &PRECISION = 6)
         : label_(label), mode_(mode), dst_(dst), PRECISION_(PRECISION), format_(format)
     {
         ;
