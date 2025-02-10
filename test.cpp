@@ -3,7 +3,7 @@
 #include <random>
 #include "./timer/timer.hpp"
 
-AutoTimer timer("auto", "std", "[{time}] ({label}) {duration} seconds.", "none", 6);
+AutoTimer timer("auto", "std", "[{time}] ({label}) <{commitID-s}> {duration} seconds.", "none", 6);
 ManualTimer timer1("manual1", "std", "[{time}] ({label}) {duration} seconds.", "none", 6);
 ManualTimer timer2("manual2", "std", "[{time}] ({label}) {duration} seconds.", "none", 6);
 
