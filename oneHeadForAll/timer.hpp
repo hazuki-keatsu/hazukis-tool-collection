@@ -1,10 +1,20 @@
-/** 使用方法：
+/**使用方法：
  * 引用该头文件，在需要计时的函数内第一条语句前创建实例即可
  *
  *      #include "timer.hpp"
  *
- *      Timer(label, mode, format, dst, PRECISION);
- *
+ *      自动计数器：
+ *      AutoTimer timer(label, mode, format, dst, PRECISION);
+ *          不需要手动开始和结束，自动记录时间，输出时间间隔
+ * 
+ *      手动计时器：
+ *      ManualTimer timer(label, mode, format, dst, PRECISION);
+ *      timer.start();
+ *      timer.end();
+ *          需要手动调用start()和end()函数开始记录，在程序结束的时候输出时间间隔
+ *      
+ *      
+ *      参数：
  *      label: 标签，默认为"timer"
  *      mode: 输出模式，默认为"std"，可选"log"
  *      format: 输出格式，默认为"[{time}] ({label}) {duration} seconds."，还有{commitID}可选
@@ -16,19 +26,21 @@
  * 该对象示例会在构建时自动初始化，析构时自动输出，不会影响原代码的运行时间
  *
  * 作者：Hazuki
+ * One Head For All
  * 2025-02-09
  */
 
-#ifndef TIMER_HPP
-#define TIMER_HPP
-
-#include <iostream>
-#include <chrono>
-#include <iomanip>
-#include <fstream>
-#include <filesystem>
-#include <memory>
-#include <array>
+ #ifndef TIMER_HPP
+ #define TIMER_HPP
+ 
+ #include <iostream>
+ #include <chrono>
+ #include <array>
+ #include <memory>
+ #include <iomanip>
+ #include <filesystem>
+ #include <fstream>
+ #include <iostream>
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -88,6 +100,7 @@ public:
 #ifdef _WIN32
 int TerminalColor_::textAttribute_ = TerminalColor_::getInitialTextAttribute();
 #endif
+ 
 
 // 输出控制
 class Output_
@@ -127,7 +140,8 @@ public:
 
     // 替换关键字
     static std::string replaceKeyWord(std::string &format, const std::string &label,
-                                      std::chrono::microseconds &duration, const int &PRECISION, std::string &timestamp, std::string &commitID)
+                                      std::chrono::microseconds &duration, const int &PRECISION,  
+                                      std::string &timestamp, std::string &commitID)
     {
         std::string result = format;
         size_t pos;
@@ -153,6 +167,13 @@ public:
         {
             result.replace(pos, 10, commitID);
         }
+        
+        // commitID 短链
+        std::string commitID_short = commitID.substr(0, 7);
+        while ((pos = result.find("{commitID-s}")) != std::string::npos)
+        {
+            result.replace(pos, 12, commitID_short);
+        }
         return result;
     }
 
@@ -167,7 +188,7 @@ public:
         }
         std::string key = replaceKeyWord(format, label, duration, PRECISION, timestamp, commitID);
         TerminalColor_::setGreen();
-        std::cout << "\n\n" << key << std::endl;
+        std::cout << "\n" << key << std::endl;
         TerminalColor_::reset();
     }
 
@@ -216,66 +237,130 @@ public:
 
         std::string key = replaceKeyWord(format, label, duration, PRECISION, timestamp, commitID);;
 
-        logFile << "\n" << key << std::endl;
+        logFile << key << std::endl;
         logFile.close();
     };
 };
 
-// 核心计时器
-class Timer
-{
-public:
-    // 构造函数，记录开始时间
-    Timer(const std::string &label = "timer",
-          const std::string &mode = "std",
-          const std::string &format = "[{time}] ({label}) {duration} seconds.",
-          const std::string &dst = "none",
-          const int &PRECISION = 6)
-        : label_(label), mode_(mode), dst_(dst), PRECISION_(PRECISION), format_(format)
-    {
-        start_ = std::chrono::high_resolution_clock::now();
-    }
 
-    // 析构函数，记录结束时间并输出时间间隔
-    ~Timer()
-    {
-        end_ = std::chrono::high_resolution_clock::now();
-
-        // 时间间隔
-        auto duration_ = std::chrono::duration_cast<std::chrono::microseconds>(end_ - start_);
-
-        if (mode_ == "std")
-        {
-            Output_::stdOutput(label_, duration_, PRECISION_, format_);
-        }
-        else if (mode_ == "log")
-        {
-            std::string logFile;
-            if (dst_ == "none")
-            {
-#ifdef _WIN32
-                logFile = ".\\timer.log";
-#else
-                logFile = "./timer.log";
-#endif
-
-                Output_::logOutput(label_, duration_, PRECISION_, logFile, format_);
-            }
-            else
-            {
-                Output_::logOutput(label_, duration_, PRECISION_, dst_, format_);
-            }
-        }
-    };
-
-private:
-    std::chrono::high_resolution_clock::time_point start_;
-    std::chrono::high_resolution_clock::time_point end_;
-    std::string label_;
-    std::string mode_;
-    std::string dst_;
-    int PRECISION_;
-    std::string format_;
-};
-
-#endif
+ // 自动计时器
+ class AutoTimer
+ {
+ public:
+     // 构造函数，记录开始时间
+     AutoTimer(const std::string &label = "timer",
+               const std::string &mode = "std",
+               const std::string &format = "[{time}] ({label}) {duration} seconds.",
+               const std::string &dst = "none",
+               const int &PRECISION = 6)
+         : label_(label), mode_(mode), dst_(dst), PRECISION_(PRECISION), format_(format)
+     {
+         start_ = std::chrono::high_resolution_clock::now();
+     }
+ 
+     // 析构函数，记录结束时间并输出时间间隔
+     ~AutoTimer()
+     {
+         end_ = std::chrono::high_resolution_clock::now();
+ 
+         // 时间间隔
+         auto duration_ = std::chrono::duration_cast<std::chrono::microseconds>(end_ - start_);
+ 
+         if (mode_ == "std")
+         {
+             Output_::stdOutput(label_, duration_, PRECISION_, format_);
+         }
+         else if (mode_ == "log")
+         {
+             std::string logFile;
+             if (dst_ == "none")
+             {
+ #ifdef _WIN32
+                 logFile = ".\\timer.log";
+ #else
+                 logFile = "./timer.log";
+ #endif
+ 
+                 Output_::logOutput(label_, duration_, PRECISION_, logFile, format_);
+             }
+             else
+             {
+                 Output_::logOutput(label_, duration_, PRECISION_, dst_, format_);
+             }
+         }
+     }
+ 
+ private:
+     std::chrono::high_resolution_clock::time_point start_;
+     std::chrono::high_resolution_clock::time_point end_;
+     std::string label_;
+     std::string mode_;
+     std::string dst_;
+     int PRECISION_;
+     std::string format_;
+ };
+ 
+ // 手动计时器
+ class ManualTimer
+ {
+ public:
+     ManualTimer(const std::string &label = "timer",
+         const std::string &mode = "std",
+         const std::string &format = "[{time}] ({label}) {duration} seconds.",
+         const std::string &dst = "none",
+         const int &PRECISION = 6)
+         : label_(label), mode_(mode), dst_(dst), PRECISION_(PRECISION), format_(format)
+     {
+         ;
+     }
+ 
+     void start()
+     {
+         start_ = std::chrono::high_resolution_clock::now();
+     }
+ 
+     void end()
+     {
+         end_ = std::chrono::high_resolution_clock::now();
+     }
+ 
+     ~ManualTimer()
+     {
+         // 时间间隔
+         auto duration_ = std::chrono::duration_cast<std::chrono::microseconds>(end_ - start_);
+ 
+         if (mode_ == "std")
+         {
+             Output_::stdOutput(label_, duration_, PRECISION_, format_);
+         }
+         else if (mode_ == "log")
+         {
+             std::string logFile;
+             if (dst_ == "none")
+             {
+ #ifdef _WIN32
+                 logFile = ".\\timer.log";
+ #else
+                 logFile = "./timer.log";
+ #endif
+ 
+                 Output_::logOutput(label_, duration_, PRECISION_, logFile, format_);
+             }
+             else
+             {
+                 Output_::logOutput(label_, duration_, PRECISION_, dst_, format_);
+             }
+         }
+     }
+ 
+ private:
+     std::chrono::high_resolution_clock::time_point start_;
+     std::chrono::high_resolution_clock::time_point end_;
+     std::string label_;
+     std::string mode_;
+     std::string dst_;
+     int PRECISION_;
+     std::string format_;
+ };
+ 
+ #endif

@@ -48,7 +48,8 @@ public:
 
     // 替换关键字
     static std::string replaceKeyWord(std::string &format, const std::string &label,
-                                      std::chrono::microseconds &duration, const int &PRECISION, std::string &timestamp, std::string &commitID)
+                                      std::chrono::microseconds &duration, const int &PRECISION,  
+                                      std::string &timestamp, std::string &commitID)
     {
         std::string result = format;
         size_t pos;
@@ -74,6 +75,13 @@ public:
         {
             result.replace(pos, 10, commitID);
         }
+        
+        // commitID 短链
+        std::string commitID_short = commitID.substr(0, 7);
+        while ((pos = result.find("{commitID-s}")) != std::string::npos)
+        {
+            result.replace(pos, 12, commitID_short);
+        }
         return result;
     }
 
@@ -88,7 +96,7 @@ public:
         }
         std::string key = replaceKeyWord(format, label, duration, PRECISION, timestamp, commitID);
         TerminalColor_::setGreen();
-        std::cout << "\n\n" << key << std::endl;
+        std::cout << "\n" << key << std::endl;
         TerminalColor_::reset();
     }
 
@@ -137,7 +145,7 @@ public:
 
         std::string key = replaceKeyWord(format, label, duration, PRECISION, timestamp, commitID);;
 
-        logFile << "\n" << key << std::endl;
+        logFile << key << std::endl;
         logFile.close();
     };
 };
