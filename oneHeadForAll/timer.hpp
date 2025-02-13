@@ -243,63 +243,6 @@ public:
     };
 };
 
-// 自动计时器
-class AutoTimer
-{
-public:
-    // 构造函数，记录开始时间
-    AutoTimer(const std::string &label = "timer",
-              const std::string &mode = "std",
-              const std::string &format = "[{time}] ({label}) {duration} seconds.",
-              const std::string &dst = "none",
-              const int &PRECISION = 6)
-        : label_(label), mode_(mode), dst_(dst), PRECISION_(PRECISION), format_(format)
-    {
-        start_ = std::chrono::high_resolution_clock::now();
-    }
-
-    // 析构函数，记录结束时间并输出时间间隔
-    ~AutoTimer()
-    {
-        end_ = std::chrono::high_resolution_clock::now();
-
-        // 时间间隔
-        auto duration_ = std::chrono::duration_cast<std::chrono::microseconds>(end_ - start_);
-
-        if (mode_ == "std")
-        {
-            Output_::stdOutput(label_, duration_, PRECISION_, format_);
-        }
-        else if (mode_ == "log")
-        {
-            std::string logFile;
-            if (dst_ == "none")
-            {
-#ifdef _WIN32
-                logFile = ".\\timer.log";
-#else
-                logFile = "./timer.log";
-#endif
-
-                Output_::logOutput(label_, duration_, PRECISION_, logFile, format_);
-            }
-            else
-            {
-                Output_::logOutput(label_, duration_, PRECISION_, dst_, format_);
-            }
-        }
-    }
-
-private:
-    std::chrono::high_resolution_clock::time_point start_;
-    std::chrono::high_resolution_clock::time_point end_;
-    std::string label_;
-    std::string mode_;
-    std::string dst_;
-    int PRECISION_;
-    std::string format_;
-};
-
 // 手动计时器
 class ManualTimer
 {
@@ -353,7 +296,7 @@ public:
         }
     }
 
-private:
+protected:
     std::chrono::high_resolution_clock::time_point start_;
     std::chrono::high_resolution_clock::time_point end_;
     std::string label_;
@@ -361,6 +304,26 @@ private:
     std::string dst_;
     int PRECISION_;
     std::string format_;
+};
+
+// 自动计数器
+class AutoTimer : public ManualTimer
+{
+public:
+    AutoTimer(const std::string &label = "timer",
+        const std::string &mode = "std",
+        const std::string &format = "[{time}] ({label}) {duration} seconds.",
+        const std::string &dst = "none",
+        const int &PRECISION = 6)
+        : ManualTimer(label, mode, format, dst, PRECISION)
+    {
+        start_ = std::chrono::high_resolution_clock::now();
+    }
+
+    ~AutoTimer()
+    {
+        end_ = std::chrono::high_resolution_clock::now();
+    }
 };
 
 #endif
