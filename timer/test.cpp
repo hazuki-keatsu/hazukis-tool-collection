@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <random>
-#include "./timer/timer.hpp"
+#include "./timer.hpp"
 
 AutoTimer timer("auto", "std", "[{time}] ({label}) <{commitID-s}> {duration} seconds.", "none", 6);
 ManualTimer timer1("manual1", "std", "[{time}] ({label}) {duration} seconds.", "none", 6);
@@ -32,10 +32,14 @@ int main()
     std::cout << "开始估计PI值..." << std::endl;
 
     timer1.start();
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, 100);
+
     for (int i = 0; i < 10000; i++)
     {
         std::cout << i << " ";
-        std::cout << random() << " ";
+        std::cout << dis(gen) << " ";
     }
     timer1.end();
 
