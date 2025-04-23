@@ -25,3 +25,20 @@ Hazuki的小工具合集，你可以自由地使用所有的代码。
 
 1. `-t=128`: 阈值，0~255
 2. `-r=3`: 窗口大小，只能为奇数
+
+## Split for CPP
+
+**Split for CPP** 是对 CPP 标准库中没有 `split()` 函数的补充。
+
+**Split for CPP** 是基于输入的分隔符`std::string delimeter`来对 `std::string str` 来进行分割，可以将分割的结果存入多种 STL 模板中 (`std::set<std::string>, std::vector<std::string>, std::stack<std::string>, std::queue<std::string>, std::pair<std::string, std::string>`)
+
+### 使用
+
+`split()` 函数接收两个参数：
+
+1. `str` 被分割的字符串
+2. `delimiter` 分隔符
+
+同时返回一个参数：
+
+1. `Container` 返回你设定的容器
